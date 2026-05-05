@@ -34,6 +34,24 @@ class _HomePageState extends State<HomePage> {
 
   // ✅ Simplified — no manual provider call, realtime handles badge
 
+  Future<void> addNotification({
+    required String title,
+    required String message,
+    required String type,
+  }) async {
+    final user = supabase.auth.currentUser;
+    if (user == null) return;
+
+    await supabase.from('notifications').insert({
+      'user_id': user.id,
+      'title': title,
+      'message': message,
+      'type': type,
+      'is_read': false,
+      'created_at': DateTime.now().toIso8601String(),
+    });
+  }
+
   final Set<String> sentReminders = {};
 
   double getProgress(DateTime start, DateTime end) {
