@@ -24,6 +24,8 @@ Future<void> main() async {
 const String adminRoute = '/admin';
 const String eventRoute = '/events';
 const String addEventRoute = '/addEvents';
+const String loginRoute = '/login';
+const String signupRoute = '/signup';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
