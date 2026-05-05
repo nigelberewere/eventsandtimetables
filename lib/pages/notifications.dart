@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:provider/provider.dart';
 import '../pages/theme_provider.dart';
 import '../widgets/bottom_dock.dart';
@@ -13,7 +13,7 @@ class NotificationsPage extends StatefulWidget {
 }
 
 class _NotificationsPageState extends State<NotificationsPage> {
-  
+  final supabase = Supabase.instance.client;
   List notifications = [];
 
   @override
@@ -22,7 +22,31 @@ class _NotificationsPageState extends State<NotificationsPage> {
     fetchNotifications();
   }
 
- 
+  Future<void> fetchNotifications() async {
+    final user = supabase.auth.currentUser;
+
+    final data = await supabase
+        .from('notifications')
+        .select()
+        .eq('user_id', user!.id)
+        .order('created_at', ascending: false);
+
+    setState(() => notifications = data);
+  }
+
+  Future<void> markAsRead(String id) async {
+  await supabase
+      .from('notifications')
+      .update({'is_read': true})
+      .eq('id', id);
+
+  final provider =
+      Provider.of<NotificationProvider>(context, listen: false);
+
+  await provider.fetchUnreadCount();
+
+  fetchNotifications();
+}
 
   @override
   Widget build(BuildContext context) {
