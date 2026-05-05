@@ -178,7 +178,74 @@ void listenToAdminLogs() {
         }
       });
 }
+void _showAdminPopup(String action, String entity) {
+    showDialog(
+      context: context,
+      builder: (_) {
+        return AlertDialog(
+          title: const Text("Admin Update"),
+          content: Text(
+            "$entity has been $action.\n\nTap to view timetable.",
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Close"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/timetable');
+              },
+              child: const Text("View Timetable"),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
+  void listenToBroadcasts() {
+  _broadcastSub = supabase
+      .from('broadcasts')
+      .stream(primaryKey: ['id'])
+      .listen((data) async {  // 
+        if (data.isEmpty) return;
+
+        final latest = data.last;
+
+        final programMatch = latest['target_program'] == null ||
+            latest['target_program'] == userProgram;
+
+        final yearMatch = latest['target_year'] == null ||
+            latest['target_year'] == userYear;
+
+        final isGlobal = latest['target_program'] == null &&
+            latest['target_year'] == null;
+
+        if (isGlobal || (programMatch && yearMatch)) {
+          final title = latest['title'] as String;
+          final message = latest['message'] as String;
+
+          //  Check before showing popup
+          final alreadySeen = await _notificationAlreadyExists(
+            title: title,
+            message: message,
+            type: 'broadcast',
+          );
+
+          if (alreadySeen) return; // 
+
+          await addNotification(
+            title: title,
+            message: message,
+            type: 'broadcast',
+          );
+
+          _showPopup(title, message);
+        }
+      });
+}
   void _showPopup(String title, String message) {
     showDialog(
       context: context,
