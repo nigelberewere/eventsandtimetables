@@ -3,257 +3,178 @@ import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'theme_provider.dart';
 
-class UpdateClassPage extends StatefulWidget {
-  const UpdateClassPage({super.key});
+class UpdateEventPage extends StatefulWidget {
+  const UpdateEventPage({super.key});
 
   @override
-  State<UpdateClassPage> createState() => _UpdateClassPageState();
+  State<UpdateEventPage> createState() => _UpdateEventPageState();
 }
 
-class _UpdateClassPageState extends State<UpdateClassPage> {
+class _UpdateEventPageState extends State<UpdateEventPage> {
   final supabase = Supabase.instance.client;
 
-  List<Map<String, dynamic>> classes = [];
+  List<Map<String, dynamic>> events = [];
   bool isLoading = false;
-
-  String selectedProgram = "Computer Science";
-  String selectedYear = "1.1 August";
   String searchQuery = "";
 
- final programs = [
-  'Accounting',
-  'Actuarial Science',
-  'Agribusiness and Economics',
-  'Agricultural Engineering',
-  'Agricultural Genetics and Cell Technology',
-  'Agricultural Information Technology',
-  'Applied Biology and Biochemistry',
-  'Applied Mathematics',
-  'Applied Physics',
-  'Architectural Studies',
-  'Banking',
-  'Biotechnology',
-  'Business Analytics',
-  'Chemical Engineering',
-  'Computer Science',
-  'Economics and Econometrics',
-  'Electronic Engineering',
-  'Environmental Science and Health',
-  'Fibre and Polymer Materials Engineering',
-  'Finance',
-  'Forest Resources and Wildlife Management',
-  'Geographical Information Systems and Remote Sensing',
-  'Industrial and Manufacturing Engineering',
-  'Informatics',
-  'Journalism and Media Studies',
-  'Operations Research and Statistics',
-  'Property Development and Estate Management',
-  'Public Health',
-  'Quantity Surveying',
-  'Radiography',
-  'Risk Management and Insurance',
-  'Sustainable Food Production',
-];
+  final categories = [
+    'Academic', 'Sports', 'Career', 'Cultural', 'Workshop', 'Social', 'Other','General',
+  ];
 
- final years = [
-  '1.1 August', '1.2 August', '1.1 March', '1.2 March',
-  '2.1 August', '2.2 August', '2.1 March', '2.2 March',
-  '3.1 March', '3.2 March', '3.1 August', '3.2 August',
-  '4.1 March', '4.2 March', '4.1 August', '4.2 August',
-  '5.1 March', '5.2 March', '5.1 August', '5.2 August',
-];
   @override
   void initState() {
     super.initState();
-    fetchClasses();
+    fetchEvents();
   }
 
-  
+  Future<void> fetchEvents() async {
+    setState(() => isLoading = true);
 
-  List<Map<String, dynamic>> get filteredClasses {
-    if (searchQuery.isEmpty) return classes;
+    final data = await supabase
+        .from('events')
+        .select()
+        .order('created_at', ascending: false);
 
-    return classes.where((c) {
-      return c['course_name']
+    setState(() {
+      events = List<Map<String, dynamic>>.from(data);
+      isLoading = false;
+    });
+  }
+
+  List<Map<String, dynamic>> get filteredEvents {
+    if (searchQuery.isEmpty) return events;
+
+    return events.where((e) {
+      return e['title']
           .toString()
           .toLowerCase()
           .contains(searchQuery.toLowerCase());
     }).toList();
   }
 
-  void _openEditDialog(Map<String, dynamic> c) {
-    final course = TextEditingController(text: c['course_name']);
-    final venue = TextEditingController(text: c['venue']);
-    final instructor = TextEditingController(text: c['instructor']);
+  void _openEditDialog(Map<String, dynamic> e) {
+  final title = TextEditingController(text: e['title']);
+  final description = TextEditingController(text: e['description']);
+  final location = TextEditingController(text: e['location']);
+  final organizer = TextEditingController(text: e['organizer']);
+  final attendees = TextEditingController(text: e['attendees'].toString());
+  final date = TextEditingController(text: e['date']);
+  final start = TextEditingController(text: e['start_time']);
+  final end = TextEditingController(text: e['end_time']);
 
-    String day = c['day'];
-    String start = c['start_time'];
-    String end = c['end_time'];
-    int credits = c['credits'] ?? 3;
+  // FIX: Ensure the value exists in the categories list before assigning it
+  String category = categories.contains(e['category']) 
+      ? e['category'] 
+      : 'General'; // Default to General if not found
 
-    showDialog(
-      context: context,
-      builder: (_) {
-        final theme = context.read<ThemeProvider>();
+  showDialog(
+    context: context,
+    builder: (dialogContext) { // Use a unique name for dialog context
+      final theme = Provider.of<ThemeProvider>(context, listen: false);
 
-        return AlertDialog(
-          backgroundColor: theme.surfaceColor,
-          title: const Text("Edit Class"),
-          content: SingleChildScrollView(
-            child: Column(
-              children: [
-                _field(theme, course, "Course Name"),
-                const SizedBox(height: 10),
-                _field(theme, venue, "Venue"),
-                const SizedBox(height: 10),
-                _field(theme, instructor, "Instructor"),
-                const SizedBox(height: 10),
-
-                DropdownButtonFormField<String>(
-                  initialValue: day,
-                  items: [
-                    'Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'
-                  ]
-                      .map((d) => DropdownMenuItem(value: d, child: Text(d)))
-                      .toList(),
-                  onChanged: (v) => day = v!,
-                  decoration: const InputDecoration(labelText: "Day"),
-                ),
-
-                const SizedBox(height: 10),
-
-                _timeField("Start Time", start, (v) => start = v),
-                const SizedBox(height: 10),
-                _timeField("End Time", end, (v) => end = v),
-
-                const SizedBox(height: 10),
-
-                DropdownButtonFormField<int>(
-                  initialValue: credits,
-                  items: [1,2,3,4,5]
-                      .map((c) => DropdownMenuItem(value: c, child: Text("$c")))
-                      .toList(),
-                  onChanged: (v) => credits = v!,
-                  decoration: const InputDecoration(labelText: "Credits"),
-                ),
-              ],
+      return StatefulBuilder( // Use StatefulBuilder to allow dropdown to update
+        builder: (context, setDialogState) {
+          return AlertDialog(
+            backgroundColor: theme.surfaceColor,
+            title: const Text("Edit Event"),
+            content: SingleChildScrollView(
+              child: Column(
+                children: [
+                  _field(theme, title, "Title"),
+                  const SizedBox(height: 10),
+                  DropdownButtonFormField<String>(
+                    initialValue: category,
+                    items: categories
+                        .map((c) => DropdownMenuItem(value: c, child: Text(c, style: TextStyle(color: theme.textColor))))
+                        .toList(),
+                    onChanged: (v) {
+                      setDialogState(() => category = v!);
+                    },
+                    dropdownColor: theme.surfaceColor,
+                    decoration: InputDecoration(
+                      labelText: "Category",
+                      labelStyle: TextStyle(color: theme.textColor),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  _field(theme, description, "Description"),
+                  const SizedBox(height: 10),
+                  _field(theme, location, "Location"),
+                  const SizedBox(height: 10),
+                  _field(theme, organizer, "Organizer"),
+                  const SizedBox(height: 10),
+                  _field(theme, attendees, "Attendees"),
+                  const SizedBox(height: 10),
+                  _field(theme, date, "Date"),
+                  const SizedBox(height: 10),
+                  _field(theme, start, "Start Time"),
+                  const SizedBox(height: 10),
+                  _field(theme, end, "End Time"),
+                ],
+              ),
             ),
-          ),
+            actions: [
+              TextButton(
+                onPressed: () async {
+                  await supabase.from('events').delete().eq('id', e['id']);
 
-          actions: [
-            // ❌ DELETE
-            TextButton(
-              onPressed: () async {
-                // 1. Delete class
-await supabase
-    .from('timetables')
-    .delete()
-    .eq('id', c['id']);
 
-// 2. Log admin action
 await supabase.from('admin_logs').insert({
-  'action': 'Deleted Class',
-  'entity': "${c['course_name']} (${c['program']} - ${c['year']})",
-  'program': c['program'],
-  'year': c['year'],
+  'action': 'Deleted Event',
+  'entity': "${e['title']} (${e['category']})",
   'created_at': DateTime.now().toIso8601String(),
 });
 
-// 3. Get affected students
-final students = await supabase
-    .from('profiles')
-    .select('id')
-    .eq('program', c['program'])
-    .eq('year', c['year']);
+Navigator.pop(context);
+fetchEvents();
+                 
+                },
+                child: const Text("Delete", style: TextStyle(color: Colors.red)),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                 await supabase.from('events').update({
+  'title': title.text,
+  'description': description.text,
+  'location': location.text,
+  'organizer': organizer.text,
+  'attendees': int.tryParse(attendees.text) ?? 0,
+  'category': category,
+  'date': date.text,
+  'start_time': start.text,
+  'end_time': end.text,
+}).eq('id', e['id']);
 
-// 4. Send notifications
-await supabase.from('notifications').insert(
-  students.map((s) {
-    return {
-      'user_id': s['id'],
-      'title': 'Class Removed',
-      'message':
-          "${c['course_name']} has been removed from your timetable",
-      'is_read': false,
-      'created_at': DateTime.now().toIso8601String(),
-    };
-  }).toList(),
-);
-                Navigator.pop(context);
-                fetchClasses();
-              },
-              child: const Text("Delete", style: TextStyle(color: Colors.red)),
-            ),
-
-            // 💾 UPDATE
-            ElevatedButton(
-              onPressed: () async {
-              // 1. Update class in timetable
-await supabase.from('timetables').update({
-  'course_name': course.text,
-  'venue': venue.text,
-  'instructor': instructor.text,
-  'day': day,
-  'start_time': start,
-  'end_time': end,
-  'credits': credits,
-}).eq('id', c['id']);
-
-// 2. Log admin action
+// 🔥 ADMIN LOG - UPDATE EVENT
 await supabase.from('admin_logs').insert({
-  'action': 'Updated Class',
-  'entity': "${course.text} (${selectedProgram} - ${selectedYear})",
-  'program': selectedProgram,
-  'year': selectedYear,
+  'action': 'Updated Event',
+  'entity': "${title.text} ($category)",
   'created_at': DateTime.now().toIso8601String(),
 });
 
-// 3. Get affected students
-final students = await supabase
-    .from('profiles')
-    .select('id')
-    .eq('program', selectedProgram)
-    .eq('year', selectedYear);
-
-// 4. Notify students
-await supabase.from('notifications').insert(
-  students.map((s) {
-    return {
-      'user_id': s['id'],
-      'title': 'Class Updated',
-      'message':
-          "${course.text} timetable has been updated. Check your schedule.",
-      'is_read': false,
-      'created_at': DateTime.now().toIso8601String(),
-    };
-  }).toList(),
-);
-                Navigator.pop(context);
-                fetchClasses();
-              },
-              child: const Text("Update"),
-            )
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _timeField(String label, String initial, Function(String) onChanged) {
-    final controller = TextEditingController(text: initial);
-
-    return TextField(
-      controller: controller,
-      decoration: InputDecoration(labelText: label),
-      onChanged: onChanged,
-    );
-  }
+Navigator.pop(context);
+fetchEvents();
+                },
+                child: const Text("Update"),
+              ),
+            ],
+          );
+        }
+      );
+    },
+  );
+}
 
   Widget _field(ThemeProvider theme, TextEditingController c, String label) {
     return TextField(
       controller: c,
       style: TextStyle(color: theme.textColor),
-      decoration: InputDecoration(labelText: label),
+      decoration: InputDecoration(
+        labelText: label,
+        filled: true,
+        fillColor: theme.surfaceColor,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+      ),
     );
   }
 
@@ -264,79 +185,38 @@ await supabase.from('notifications').insert(
     return Scaffold(
       backgroundColor: theme.backgroundColor,
       appBar: AppBar(
-        title: const Text("Manage Classes"),
+        title: const Text("Manage Events"),
         backgroundColor: theme.accentColor,
       ),
 
       body: Column(
         children: [
 
-          // 🔍 FILTER SECTION
+          // 🔍 SEARCH
           Padding(
             padding: const EdgeInsets.all(12),
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: DropdownButtonFormField(
-                        initialValue: selectedProgram,
-                        items: programs
-                            .map((p) => DropdownMenuItem(
-                                  value: p,
-                                  child: Text(p),
-                                ))
-                            .toList(),
-                        onChanged: (v) {
-                          setState(() => selectedProgram = v!);
-                          fetchClasses();
-                        },
-                        decoration: const InputDecoration(labelText: "Program"),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: DropdownButtonFormField(
-                        initialValue: selectedYear,
-                        items: years
-                            .map((y) => DropdownMenuItem(
-                                  value: y,
-                                  child: Text(y),
-                                ))
-                            .toList(),
-                        onChanged: (v) {
-                          setState(() => selectedYear = v!);
-                          fetchClasses();
-                        },
-                        decoration: const InputDecoration(labelText: "Year"),
-                      ),
-                    ),
-                  ],
+            child: TextField(
+              onChanged: (v) => setState(() => searchQuery = v),
+              decoration: InputDecoration(
+                hintText: "Search events...",
+                prefixIcon: const Icon(Icons.search),
+                filled: true,
+                fillColor: theme.surfaceColor,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
-
-                const SizedBox(height: 10),
-
-                TextField(
-                  onChanged: (v) => setState(() => searchQuery = v),
-                  decoration: InputDecoration(
-                    hintText: "Search class...",
-                    prefixIcon: const Icon(Icons.search),
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12)),
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
 
-          // 📚 GRID
+          // 📅 GRID
           Expanded(
             child: isLoading
                 ? const Center(child: CircularProgressIndicator())
-                : filteredClasses.isEmpty
+                : filteredEvents.isEmpty
                     ? Center(
                         child: Text(
-                          "No classes found",
+                          "No events found",
                           style: TextStyle(color: theme.textColor),
                         ),
                       )
@@ -345,16 +225,16 @@ await supabase.from('notifications').insert(
                         gridDelegate:
                             const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
-                          childAspectRatio: 1.2,
                           crossAxisSpacing: 10,
                           mainAxisSpacing: 10,
+                          childAspectRatio: 1.1,
                         ),
-                        itemCount: filteredClasses.length,
+                        itemCount: filteredEvents.length,
                         itemBuilder: (_, i) {
-                          final c = filteredClasses[i];
+                          final e = filteredEvents[i];
 
                           return GestureDetector(
-                            onTap: () => _openEditDialog(c),
+                            onTap: () => _openEditDialog(e),
                             child: Container(
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
@@ -365,7 +245,7 @@ await supabase.from('notifications').insert(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    c['course_name'],
+                                    e['title'],
                                     style: TextStyle(
                                       color: theme.textColor,
                                       fontWeight: FontWeight.bold,
@@ -373,14 +253,14 @@ await supabase.from('notifications').insert(
                                   ),
                                   const Spacer(),
                                   Text(
-                                    c['day'],
+                                    e['category'] ?? '',
                                     style: TextStyle(
                                       color: theme.accentColor,
                                       fontSize: 12,
                                     ),
                                   ),
                                   Text(
-                                    "${c['start_time']} - ${c['end_time']}",
+                                    e['date'] ?? '',
                                     style: TextStyle(
                                       color: theme.textColor.withOpacity(0.6),
                                       fontSize: 11,
