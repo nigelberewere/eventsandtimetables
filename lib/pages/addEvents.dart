@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'theme_provider.dart';
 
 class AddEventPage extends StatefulWidget {
@@ -11,7 +12,7 @@ class AddEventPage extends StatefulWidget {
 }
 
 class _AddEventPageState extends State<AddEventPage> {
-  
+  final supabase = Supabase.instance.client;
   final _formKey = GlobalKey<FormState>();
 
   late TextEditingController _titleController;
@@ -91,7 +92,76 @@ class _AddEventPageState extends State<AddEventPage> {
     return '${months[date.month - 1]} ${date.day}, ${date.year}';
   }
 
- 
+  // --- SAVE (CREATE OR UPDATE) ---
+  Future<void> _submitForm() async {
+  if (!_formKey.currentState!.validate()) return;
+
+  try {
+    final user = supabase.auth.currentUser;
+    if (user == null) {
+      throw Exception("User not logged in");
+    }
+
+    final data = {
+      'title': _titleController.text,
+      'description': _descriptionController.text,
+      'location': _locationController.text,
+      'organizer': _organizerController.text,
+      'attendees': int.tryParse(_attendeesController.text) ?? 0,
+      'category': _selectedCategory,
+      'date': _dateController.text,
+      'start_time': _startTimeController.text,
+      'end_time': _endTimeController.text,
+    };
+
+    String eventTitle = _titleController.text;
+
+    if (isEditing) {
+      // ✏️ UPDATE EVENT
+      await supabase
+          .from('events')
+          .update(data)
+          .eq('id', widget.event!['id']);
+
+      // 🔥 ADMIN LOG (UPDATE)
+      await supabase.from('admin_logs').insert({
+        'action': 'Updated Event',
+        'entity': '$eventTitle ($_selectedCategory)',
+        'created_at': DateTime.now().toIso8601String(),
+      });
+    } else {
+      // ➕ CREATE EVENT
+      data.addAll({
+        'created_by': user.id,
+        'created_at': DateTime.now().toIso8601String(),
+      });
+
+      await supabase.from('events').insert(data);
+
+      // 🔥 ADMIN LOG (CREATE)
+      await supabase.from('admin_logs').insert({
+        'action': 'Created Event',
+        'entity': '$eventTitle ($_selectedCategory)',
+        'created_at': DateTime.now().toIso8601String(),
+      });
+    }
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(isEditing
+            ? 'Event updated successfully ✏️'
+            : 'Event created successfully 🎉'),
+      ),
+    );
+
+    Navigator.pop(context, true);
+  } catch (e) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text('Error: $e')));
+  }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -210,7 +280,8 @@ class _AddEventPageState extends State<AddEventPage> {
     );
   }
 
-  
+  // --- UI HELPERS (unchanged logic) ---
+
   Widget _buildTextField(ThemeProvider tp,
       {required TextEditingController controller,
       required String label,
