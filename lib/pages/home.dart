@@ -751,4 +751,33 @@ void _showAdminPopup(String action, String entity) {
       },
     );
   }
+  void _showRooms() {
+    final rooms = timetable
+        .map((c) => c['venue'] as String)
+        .toSet()
+        .toList();
+
+    showDialog(
+      context: context,
+      builder: (_) {
+        return AlertDialog(
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          title: const Text("Your Program Rooms"),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: rooms.length,
+              itemBuilder: (_, i) {
+                return ListTile(
+                  leading: const Icon(Icons.meeting_room),
+                  title: Text(rooms[i]),
+                );
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
 }
