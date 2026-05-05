@@ -1,4 +1,4 @@
-import 'package:campuseventsandtimetables/pages/landing.dart';
+import 'pages/landing.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
