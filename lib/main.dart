@@ -1,9 +1,27 @@
+import 'package:campuseventsandtimetables/pages/landing.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
+import 'pages/admin.dart';
+import 'pages/events.dart';
+import 'pages/home.dart';
+import 'pages/login.dart';
+import 'pages/manage_notifications.dart';
+import 'pages/manage_users.dart';
+import 'pages/notifications.dart';
+import 'pages/profile.dart';
+import 'pages/signup.dart';
+import 'pages/timetables.dart';
+import 'pages/addEvent.dart';
+import 'pages/addClass.dart';
+import 'pages/settings.dart';
+
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'pages/theme_provider.dart';
-import 'pages/login.dart';
-import 'pages/signup.dart';
+import 'pages/updateClass.dart';
+import 'pages/updateEvent.dart';
+import 'widgets/notification_provider.dart';
+import 'pages/admin_broadcast.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,105 +33,192 @@ Future<void> main() async {
 
   runApp(
     MultiProvider(
-      providers: [ChangeNotifierProvider(create: (_) => ThemeProvider())],
+      providers: [
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => NotificationProvider()),
+      ],
       child: const MyApp(),
     ),
   );
 }
 
-const String adminRoute = '/admin';
-const String eventRoute = '/events';
-const String addEventRoute = '/addEvents';
 const String loginRoute = '/login';
 const String signupRoute = '/signup';
+const String homeRoute = '/home';
+const String eventsRoute = '/events';
+const String landingRoute = '/landing';
+const String timetablesRoute = '/timetables';
+const String addEventRoute = '/addEvent';
+const String addClassRoute = '/addClass';
+const String notificationsRoute = '/notifications';
+const String manageNotificationsRoute = '/manageNotifications';
+const String manageUsersRoute = '/manageUsers';
+const String profileRoute = '/profile';
+const String adminRoute = '/admin';
+const String settingsRoute = '/settings';
+const String updateClassRoute = '/updateClass';
+const String updateEventRoute = '/updateEvent';
+const String adminBroadcastRoute = '/adminBroadcast';
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class CampusEventsApp extends StatelessWidget {
+  const CampusEventsApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(colorScheme: .fromSeed(seedColor: Colors.deepPurple)),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
+    const amberSmoke = Color(0xFFF2E0D0);
+    const blueMirage = Color(0xFF5E88B0);
+    const fallbackBlueMirage = Color(0xFF5C6D7C);
+
+    // 🌞 LIGHT THEME
+    final lightColorScheme = ColorScheme.fromSeed(
+      seedColor: blueMirage,
+      brightness: Brightness.light,
+    ).copyWith(
+      primary: blueMirage,
+      secondary: fallbackBlueMirage,
+      tertiary: amberSmoke,
+      surface: Colors.white,
     );
-  }
-}
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+    // 🌙 DARK THEME
+    final darkColorScheme = ColorScheme.fromSeed(
+      seedColor: blueMirage,
+      brightness: Brightness.dark,
+    ).copyWith(
+      primary: blueMirage,
+      secondary: fallbackBlueMirage,
+      tertiary: amberSmoke,
+      surface: const Color(0xFF121212),
+    );
 
-  final String title;
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'Campus Events',
 
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
+      themeMode: themeProvider.themeMode,
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: .center,
-          children: [
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
+      // ☀️ LIGHT
+      theme: ThemeData(
+        useMaterial3: true,
+        colorScheme: lightColorScheme,
+        scaffoldBackgroundColor: Colors.white,
+        appBarTheme: const AppBarTheme(
+          centerTitle: false,
+          elevation: 0,
+          backgroundColor: Colors.white,
+          foregroundColor: fallbackBlueMirage,
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: const Color(0xFFF9F6F0),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(18),
+            borderSide: BorderSide.none,
+          ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+
+      // 🌙 DARK
+      darkTheme: ThemeData(
+        useMaterial3: true,
+        colorScheme: darkColorScheme,
+        scaffoldBackgroundColor: const Color(0xFF121212),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color(0xFF121212),
+          foregroundColor: Colors.white,
+        ),
       ),
+
+      initialRoute: landingRoute,
+
+      onGenerateRoute: (settings) {
+        switch (settings.name) {
+          case loginRoute:
+            return MaterialPageRoute(builder: (_) => const LoginPage());
+          case signupRoute:
+            return MaterialPageRoute(builder: (_) => const SignupPage());
+          case homeRoute:
+            return MaterialPageRoute(builder: (_) => const HomePage());
+          case eventsRoute:
+            return MaterialPageRoute(builder: (_) => const EventsPage());
+          case landingRoute:
+            return MaterialPageRoute(builder: (_) => const LandingPage());
+          case timetablesRoute:
+            return MaterialPageRoute(builder: (_) => const TimetablesPage());
+          case addEventRoute:
+            return MaterialPageRoute(builder: (_) => const AddEventPage());
+          case updateEventRoute:
+            return MaterialPageRoute(builder: (_) => const UpdateEventPage());
+          case addClassRoute:
+            return MaterialPageRoute(builder: (_) => const AddClassPage());
+          case updateClassRoute:
+            return MaterialPageRoute(builder: (_) => const UpdateClassPage());
+          case notificationsRoute:
+            return MaterialPageRoute(builder: (_) => const NotificationsPage());
+          case manageNotificationsRoute:
+            return MaterialPageRoute(
+              builder: (_) => const ManageNotificationsPage(),
+            );
+          case manageUsersRoute:
+            return MaterialPageRoute(builder: (_) => const ManageUsersPage());
+          case profileRoute:
+            return MaterialPageRoute(builder: (_) => const ProfilePage());
+          case adminRoute:
+            return MaterialPageRoute(builder: (_) => const AdminPage());
+          case settingsRoute:
+            return MaterialPageRoute(builder: (_) => const SettingsScreen());
+          case adminBroadcastRoute:
+            return MaterialPageRoute(builder: (_) => const AdminBroadcastPage());
+          default:
+            return MaterialPageRoute(builder: (_) => const LoginPage());
+        }
+      },
     );
+  }
+}
+
+// ✅ MyApp now listens to auth state and starts/stops the notification stream
+class MyApp extends StatefulWidget {
+  const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  late final Stream<AuthState> _authStream;
+
+  @override
+  void initState() {
+    super.initState();
+    _authStream = Supabase.instance.client.auth.onAuthStateChange;
+
+    _authStream.listen((data) {
+      final notifProvider = context.read<NotificationProvider>();
+
+      if (data.event == AuthChangeEvent.signedIn) {
+        // ✅ User logged in — start realtime badge stream
+        notifProvider.startListening();
+      } else if (data.event == AuthChangeEvent.signedOut) {
+        // ✅ User logged out — stop stream and clear badge
+        notifProvider.stopListening();
+        notifProvider.clear();
+      }
+    });
+
+    // ✅ Handle cold start — if user is already logged in when app launches
+    final session = Supabase.instance.client.auth.currentSession;
+    if (session != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        context.read<NotificationProvider>().startListening();
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return const CampusEventsApp();
   }
 }
