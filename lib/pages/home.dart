@@ -140,6 +140,44 @@ void checkClassReminders() {
       }
     }
   }
+void listenToAdminLogs() {
+  _logSubscription = supabase
+      .from('admin_logs')
+      .stream(primaryKey: ['id'])
+      .order('created_at', ascending: false)
+      .listen((logs) async {  // ✅ async added
+        if (logs.isEmpty) return;
+
+        final latest = logs.first;
+        final action = latest['action'];
+        final entity = latest['entity'] ?? '';
+
+        if ((action == 'Updated Class' || action == 'Deleted Class') &&
+            entity.contains(userProgram ?? '') &&
+            entity.contains(userYear ?? '')) {
+
+          final title = "Admin Update";
+          final message = "$entity has been $action";
+
+          // ✅ Check before showing popup
+          final alreadySeen = await _notificationAlreadyExists(
+            title: title,
+            message: message,
+            type: "admin",
+          );
+
+          if (alreadySeen) return; 
+
+          await addNotification(
+            title: title,
+            message: message,
+            type: "admin",
+          );
+
+          _showAdminPopup(action, entity);
+        }
+      });
+}
 
   void _showPopup(String title, String message) {
     showDialog(
