@@ -12,7 +12,7 @@ import 'pages/notifications.dart';
 import 'pages/profile.dart';
 import 'pages/signup.dart';
 import 'pages/timetables.dart';
-import 'pages/addEvent.dart';
+import 'pages/addEvents.dart';
 import 'pages/addClass.dart';
 import 'pages/settings.dart';
 
