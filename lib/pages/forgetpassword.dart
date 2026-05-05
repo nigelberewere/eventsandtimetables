@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+
+import 'theme_provider.dart'; 
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -50,70 +53,92 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Provider.of<ThemeProvider>(context);
+
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: theme.backgroundColor,
       appBar: AppBar(
         title: const Text("Forgot Password"),
-        backgroundColor: Colors.transparent,
+        backgroundColor: theme.surfaceColor,
         elevation: 0,
       ),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text(
-                "Reset Your Password",
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-
-              const SizedBox(height: 20),
-
-              TextField(
-                controller: _emailController,
-                style: const TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  hintText: "Enter your email",
-                  hintStyle: TextStyle(color: Colors.white.withOpacity(0.6)),
-                  filled: true,
-                  fillColor: Colors.white.withOpacity(0.1),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: theme.surfaceColor,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  "Reset Your Password",
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: theme.textColor,
                   ),
                 ),
-              ),
 
-              const SizedBox(height: 20),
+                const SizedBox(height: 20),
 
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _loading ? null : _resetPassword,
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 15),
-                    backgroundColor: Colors.blueAccent,
+                TextField(
+                  controller: _emailController,
+                  style: TextStyle(color: theme.textColor),
+                  decoration: InputDecoration(
+                    hintText: "Enter your email",
+                    hintStyle: TextStyle(
+                      color: theme.textColor.withOpacity(0.6),
+                    ),
+                    filled: true,
+                    fillColor: theme.backgroundColor.withOpacity(0.4),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
                   ),
-                  child: _loading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text("Send Reset Link"),
                 ),
-              ),
 
-              const SizedBox(height: 10),
+                const SizedBox(height: 20),
 
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text(
-                  "Back to Login",
-                  style: TextStyle(color: Colors.white70),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _loading ? null : _resetPassword,
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 15),
+                      backgroundColor: theme.accentColor,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: _loading
+                        ? CircularProgressIndicator(
+                            color: theme.textColor,
+                          )
+                        : Text(
+                            "Send Reset Link",
+                            style: TextStyle(color: theme.textColor),
+                          ),
+                  ),
                 ),
-              )
-            ],
+
+                const SizedBox(height: 10),
+
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(
+                    "Back to Login",
+                    style: TextStyle(
+                      color: theme.textColor.withOpacity(0.7),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
