@@ -423,7 +423,6 @@ class _HomePageState extends State<HomePage> {
         foregroundColor: theme.textColor,
       ),
 
-      // ✅ const removed — allows provider to trigger rebuilds
       bottomNavigationBar: BottomDock(currentIndex: 0),
 
       body: SingleChildScrollView(
