@@ -34,9 +34,6 @@ class _HomePageState extends State<HomePage> {
 
   // ✅ Simplified — no manual provider call, realtime handles badge
 
-<<<<<<< HEAD
-  
-=======
   Future<void> addNotification({
     required String title,
     required String message,
@@ -54,7 +51,6 @@ class _HomePageState extends State<HomePage> {
       'created_at': DateTime.now().toIso8601String(),
     });
   }
->>>>>>> 790505b0fa0e07590b49774b7154fbe5c8733aec
 
   final Set<String> sentReminders = {};
 
