@@ -1,24 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
 
-  await Supabase.initialize(
-    url: 'https://ogpaekhtxtbjdvhdrfcs.supabase.co',
-    anonKey: 'sb_publishable_yBubs2D-ySAtbQL2QDHoqA_t0vBim70',
-  );
-
-  runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => ThemeProvider()),
-        ChangeNotifierProvider(create: (_) => NotificationProvider()),
-      ],
-      child: const MyApp(),
-    ),
-  );
+void main() {
+  runApp(const MyApp());
 }
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
