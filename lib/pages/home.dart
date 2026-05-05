@@ -102,7 +102,48 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
-  //
+void checkClassReminders() {
+    for (var c in timetable) {
+      final start = _combineDateAndTime(c['start_time']);
+      final diff = start.difference(now).inMinutes;
+
+      final key30 = "${c['id']}_30";
+      final key15 = "${c['id']}_15";
+      final key0 = "${c['id']}_start";
+
+      // 30 min reminder
+      if (diff == 30 && !sentReminders.contains(key30)) {
+        addNotification(
+          title: "Class Reminder",
+          message: "${c['course_name']} starts in 30 minutes",
+          type: "reminder",
+        );
+        sentReminders.add(key30);
+      }
+
+      // 15 min reminder
+      if (diff == 15 && !sentReminders.contains(key15)) {
+        addNotification(
+          title: "Class Reminder",
+          message: "${c['course_name']} starts in 15 minutes",
+          type: "reminder",
+        );
+        sentReminders.add(key15);
+      }
+
+      // Class started
+      if (now.isAfter(start) &&
+          now.isBefore(_combineDateAndTime(c['end_time'])) &&
+          !sentReminders.contains(key0)) {
+        addNotification(
+          title: "Class Started",
+          message: "${c['course_name']} has started now",
+          type: "class",
+        );
+        sentReminders.add(key0);
+      }
+    }
+  }
 
   void _showPopup(String title, String message) {
     showDialog(
