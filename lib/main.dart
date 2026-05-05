@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'pages/theme_provider.dart';
 import 'pages/events.dart';
+import 'pages/addEvent.dart';
 
 
 Future<void> main() async {
@@ -24,7 +25,8 @@ Future<void> main() async {
   );
 }
 const String adminRoute = '/admin';
-const String addEventRoute = '/addEvent';
+const String eventRoute = '/Events';
+const String addEventRoute = '/addEvents';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
