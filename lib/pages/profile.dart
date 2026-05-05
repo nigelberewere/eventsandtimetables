@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:provider/provider.dart'; // 1. Added Provider import
 import 'theme_provider.dart'; // 2. Adjust this path to your file
 import 'home.dart';
@@ -24,7 +24,25 @@ class _ProfilePageState extends State<ProfilePage> {
     fetchProfile();
   }
 
-  
+  Future<void> fetchProfile() async {
+    try {
+      final user = supabase.auth.currentUser;
+      if (user == null) return;
+
+      final data = await supabase
+          .from('profiles')
+          .select()
+          .eq('id', user.id)
+          .single();
+
+      setState(() {
+        profile = data;
+        isLoading = false;
+      });
+    } catch (e) {
+      debugPrint("Profile error: $e");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
