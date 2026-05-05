@@ -34,6 +34,8 @@ class _HomePageState extends State<HomePage> {
 
   // ✅ Simplified — no manual provider call, realtime handles badge
 
+  
+
   final Set<String> sentReminders = {};
 
   double getProgress(DateTime start, DateTime end) {
