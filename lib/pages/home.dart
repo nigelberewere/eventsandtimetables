@@ -710,5 +710,45 @@ void _showAdminPopup(String action, String entity) {
         ),
       ),
     );
+  } 
+  void _showStudentID() {
+    showDialog(
+      context: context,
+      builder: (_) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              gradient: const LinearGradient(
+                colors: [Colors.blueAccent, Colors.deepPurpleAccent],
+              ),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.account_circle,
+                    size: 60, color: Colors.white),
+                const SizedBox(height: 10),
+                Text(
+                  userName ?? "Unknown",
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  "Student ID: ${studentId ?? 'N/A'}",
+                  style: const TextStyle(color: Colors.white70),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 }
