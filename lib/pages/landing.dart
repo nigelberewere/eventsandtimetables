@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
-import '../main.dart';
 
 class LandingPage extends StatelessWidget {
   const LandingPage({super.key});

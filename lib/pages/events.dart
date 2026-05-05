@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:provider/provider.dart';
 import 'theme_provider.dart';
-
-
-
+import 'addEvent.dart';
+import 'home.dart';
+import '../widgets/bottom_dock.dart';
 
 class EventsPage extends StatefulWidget {
   const EventsPage({super.key});
@@ -16,7 +16,7 @@ class EventsPage extends StatefulWidget {
 class _EventsPageState extends State<EventsPage> {
   String _selectedFilter = 'All';
   final List<String> _filters = ['All', 'Today', 'This Week', 'This Month'];
-  
+  final supabase = Supabase.instance.client;
 
   DateTime? _getStartDate() {
     final now = DateTime.now();
@@ -37,7 +37,7 @@ class _EventsPageState extends State<EventsPage> {
     final theme = context.watch<ThemeProvider>();
     
     // Create the stream query
-   
+    final query = supabase.from('events').stream(primaryKey: ['id']).order('date');
 
     return Scaffold(
       backgroundColor: theme.backgroundColor,

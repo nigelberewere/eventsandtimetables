@@ -4,7 +4,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'dart:async';
 import 'theme_provider.dart';
 import '../main.dart';
-import '../pages/events.dart';
 Timer? _pollingTimer;
 
 class AdminPage extends StatefulWidget {
