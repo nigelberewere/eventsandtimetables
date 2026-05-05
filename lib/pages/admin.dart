@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'dart:async';
 import 'theme_provider.dart';
 import '../main.dart';
@@ -13,30 +14,97 @@ class AdminPage extends StatefulWidget {
 }
 RealtimeChannel? _logsChannel;
 class _AdminPageState extends State<AdminPage> {
- 
+  final supabase = Supabase.instance.client;
   
-  
+  Future<void> _logout(BuildContext context) async {
+  await supabase.auth.signOut();
 
- 
+  if (!context.mounted) return;
+
+  Navigator.pushNamedAndRemoveUntil(
+    context,
+    loginRoute, 
+    (route) => false,
+  );
+}
+
+  int eventCount = 0;
+  int classCount = 0;
+  int userCount = 0;
 
   List<dynamic> logs = [];
 
   @override
   void initState() {
     super.initState();
-    
+    fetchStats();
+    fetchLogs();
+     _listenToLogs();
+      _pollingTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+    fetchLogs();
+  });
   }
   @override
 @override
 void dispose() {
   _pollingTimer?.cancel(); 
- 
+  _logsChannel?.unsubscribe(); 
+  super.dispose();
 }
-  
+  void _listenToLogs() {
+  _logsChannel = supabase.channel('admin_logs_channel')
+    ..onPostgresChanges(
+      event: PostgresChangeEvent.insert,
+      schema: 'public',
+      table: 'admin_logs',
+      callback: (payload) {
+        final newLog = payload.newRecord;
 
-  
+        setState(() {
+          logs.insert(0, newLog); 
+        });
 
- 
+        // ⏳ auto remove after 20 mins
+        Timer(const Duration(minutes: 20), () {
+          if (!mounted) return;
+
+          setState(() {
+            logs.removeWhere(
+              (log) => log['created_at'] == newLog['created_at'],
+            );
+          });
+        });
+      },
+    )
+    ..subscribe();
+}
+
+  Future<void> fetchStats() async {
+    final events = await supabase.from('events').select();
+    final classes = await supabase.from('timetables').select();
+    final users = await supabase.from('profiles').select();
+
+    setState(() {
+      eventCount = events.length;
+      classCount = classes.length;
+      userCount = users.length;
+    });
+  }
+
+ Future<void> fetchLogs() async {
+  final twentyMinutesAgo =
+      DateTime.now().subtract(const Duration(minutes: 20)).toIso8601String();
+
+  final data = await supabase
+      .from('admin_logs')
+      .select()
+      .gte('created_at', twentyMinutesAgo)
+      .order('created_at', ascending: false);
+
+  setState(() {
+    logs = data;
+  });
+}
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +121,8 @@ void dispose() {
 
       body: RefreshIndicator(
         onRefresh: () async {
-          
+          await fetchStats();
+          await fetchLogs();
         },
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
@@ -74,7 +143,9 @@ void dispose() {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                   
+                    _stat("Events", eventCount.toString()),
+                    _stat("Classes", classCount.toString()),
+                    _stat("Users", userCount.toString()),
                   ],
                 ),
               ),
