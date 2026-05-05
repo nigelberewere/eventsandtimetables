@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'pages/admin.dart';
 
 void main() {
   runApp(const MyApp());
 }
+const String adminRoute = '/admin';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
