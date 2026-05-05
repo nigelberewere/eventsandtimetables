@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'pages/admin.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'pages/theme_provider.dart';
 
 
 Future<void> main() async {
