@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:provider/provider.dart'; // Add this
 import 'theme_provider.dart'; // Add this
 import 'signup.dart';
@@ -28,6 +28,79 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
+  Future<void> _signIn() async {
+  if (!(_formKey.currentState?.validate() ?? false)) return;
+
+  setState(() => _isLoading = true);
+
+  try {
+    final response = await supabase.auth.signInWithPassword(
+      email: _emailController.text.trim(),
+      password: _passwordController.text.trim(),
+    );
+
+    final user = response.user;
+
+    if (user != null) {
+      // ✅ Fetch user profile
+      final profile = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+
+      final role = profile['role'];
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Welcome back ${role == 'admin' ? 'Admin' : ''}!')),
+      );
+
+      // ✅ ROLE-BASED NAVIGATION
+      if (role == 'admin') {
+        Navigator.of(context).pushReplacementNamed('/admin');
+      } else {
+        Navigator.of(context).pushReplacementNamed('/home');
+      }
+    }
+  } on AuthException catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(e.message)),
+    );
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Unexpected error: $e')),
+    );
+  }
+
+  if (mounted) {
+    setState(() => _isLoading = false);
+  }
+}
+
+  Future<void> _resetPassword() async {
+    if (_emailController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Enter your email first')),
+      );
+      return;
+    }
+
+    try {
+      await supabase.auth.resetPasswordForEmail(
+        _emailController.text.trim(),
+      );
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Password reset email sent')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = context.watch<ThemeProvider>();
@@ -40,10 +113,7 @@ class _LoginPageState extends State<LoginPage> {
           SafeArea(
             child: Center(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 28,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 460),
                   child: Column(
@@ -60,7 +130,7 @@ class _LoginPageState extends State<LoginPage> {
                               color: Colors.black.withOpacity(0.05),
                               blurRadius: 20,
                               offset: const Offset(0, 10),
-                            ),
+                            )
                           ],
                         ),
                         child: Column(
@@ -68,10 +138,7 @@ class _LoginPageState extends State<LoginPage> {
                           children: [
                             IconButton(
                               onPressed: () => Navigator.of(context).maybePop(),
-                              icon: Icon(
-                                Icons.arrow_back_rounded,
-                                color: theme.textColor,
-                              ),
+                              icon: Icon(Icons.arrow_back_rounded, color: theme.textColor),
                             ),
                             const SizedBox(height: 16),
                             Text(
@@ -92,26 +159,15 @@ class _LoginPageState extends State<LoginPage> {
                                     style: TextStyle(color: theme.textColor),
                                     decoration: InputDecoration(
                                       labelText: 'Email',
-                                      labelStyle: TextStyle(
-                                        color: theme.textColor.withOpacity(0.7),
-                                      ),
-                                      prefixIcon: Icon(
-                                        Icons.email,
-                                        color: theme.accentColor,
-                                      ),
+                                      labelStyle: TextStyle(color: theme.textColor.withOpacity(0.7)),
+                                      prefixIcon: Icon(Icons.email, color: theme.accentColor),
                                       enabledBorder: UnderlineInputBorder(
-                                        borderSide: BorderSide(
-                                          color: theme.textColor.withOpacity(
-                                            0.2,
-                                          ),
-                                        ),
+                                        borderSide: BorderSide(color: theme.textColor.withOpacity(0.2)),
                                       ),
                                     ),
                                     validator: (value) {
-                                      if (value == null || value.isEmpty)
-                                        return 'Enter your email';
-                                      if (!value.contains('@'))
-                                        return 'Invalid email';
+                                      if (value == null || value.isEmpty) return 'Enter your email';
+                                      if (!value.contains('@')) return 'Invalid email';
                                       return null;
                                     },
                                   ),
@@ -122,38 +178,21 @@ class _LoginPageState extends State<LoginPage> {
                                     style: TextStyle(color: theme.textColor),
                                     decoration: InputDecoration(
                                       labelText: 'Password',
-                                      labelStyle: TextStyle(
-                                        color: theme.textColor.withOpacity(0.7),
-                                      ),
-                                      prefixIcon: Icon(
-                                        Icons.lock,
-                                        color: theme.accentColor,
-                                      ),
+                                      labelStyle: TextStyle(color: theme.textColor.withOpacity(0.7)),
+                                      prefixIcon: Icon(Icons.lock, color: theme.accentColor),
                                       enabledBorder: UnderlineInputBorder(
-                                        borderSide: BorderSide(
-                                          color: theme.textColor.withOpacity(
-                                            0.2,
-                                          ),
-                                        ),
+                                        borderSide: BorderSide(color: theme.textColor.withOpacity(0.2)),
                                       ),
                                       suffixIcon: IconButton(
                                         icon: Icon(
-                                          _obscurePassword
-                                              ? Icons.visibility
-                                              : Icons.visibility_off,
-                                          color: theme.textColor.withOpacity(
-                                            0.5,
-                                          ),
+                                          _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                                          color: theme.textColor.withOpacity(0.5),
                                         ),
-                                        onPressed: () => setState(
-                                          () => _obscurePassword =
-                                              !_obscurePassword,
-                                        ),
+                                        onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                                       ),
                                     ),
                                     validator: (value) {
-                                      if (value == null || value.length < 6)
-                                        return 'Minimum 6 characters';
+                                      if (value == null || value.length < 6) return 'Minimum 6 characters';
                                       return null;
                                     },
                                   ),
@@ -162,12 +201,7 @@ class _LoginPageState extends State<LoginPage> {
                                     alignment: Alignment.centerRight,
                                     child: TextButton(
                                       onPressed: _resetPassword,
-                                      child: Text(
-                                        'Forgot password?',
-                                        style: TextStyle(
-                                          color: theme.accentColor,
-                                        ),
-                                      ),
+                                      child: Text('Forgot password?', style: TextStyle(color: theme.accentColor)),
                                     ),
                                   ),
                                   const SizedBox(height: 10),
@@ -178,53 +212,29 @@ class _LoginPageState extends State<LoginPage> {
                                       onPressed: _isLoading ? null : _signIn,
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: theme.accentColor,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            15,
-                                          ),
-                                        ),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                                       ),
                                       child: _isLoading
                                           ? const SizedBox(
                                               height: 20,
                                               width: 20,
-                                              child: CircularProgressIndicator(
-                                                color: Colors.white,
-                                                strokeWidth: 2,
-                                              ),
+                                              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                                             )
-                                          : const Text(
-                                              'Sign In',
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
+                                          : const Text('Sign In', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                                     ),
                                   ),
                                   const SizedBox(height: 16),
                                   OutlinedButton(
                                     onPressed: () {
                                       Navigator.of(context).push(
-                                        MaterialPageRoute(
-                                          builder: (_) => const SignupPage(),
-                                        ),
+                                        MaterialPageRoute(builder: (_) => const SignupPage()),
                                       );
                                     },
                                     style: OutlinedButton.styleFrom(
-                                      side: BorderSide(
-                                        color: theme.accentColor,
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(15),
-                                      ),
+                                      side: BorderSide(color: theme.accentColor),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                                     ),
-                                    child: Text(
-                                      'Create an account',
-                                      style: TextStyle(
-                                        color: theme.accentColor,
-                                      ),
-                                    ),
+                                    child: Text('Create an account', style: TextStyle(color: theme.accentColor)),
                                   ),
                                 ],
                               ),
@@ -255,15 +265,9 @@ class _LoginBackdrop extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: theme.isDark
-              ? [
-                  theme.backgroundColor,
-                  theme.surfaceColor,
-                ] // Subtle dark gradient
-              : [
-                  const Color(0xFFFFF8F0),
-                  const Color(0xFFF1E6DA),
-                ], // Original light colors
+          colors: theme.isDark 
+            ? [theme.backgroundColor, theme.surfaceColor] // Subtle dark gradient
+            : [const Color(0xFFFFF8F0), const Color(0xFFF1E6DA)], // Original light colors
         ),
       ),
     );
