@@ -24,7 +24,26 @@ class _ManageUsersPageState extends State<ManageUsersPage> {
     _fetchUsers();
   }
 
-    
+  Future<void> _fetchUsers() async {
+    try {
+      final data = await supabase.from('profiles').select();
+
+      setState(() {
+        _users = List<Map<String, dynamic>>.from(data).map((u) {
+          return {
+            'name': u['full_name'] ?? 'No Name',
+            'student id': u['student_id'] ?? '',
+            'program': u['program'] ?? '',
+          };
+        }).toList();
+
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() => _isLoading = false);
+      debugPrint("Error fetching users: $e");
+    }
+  }
 
   @override
   void dispose() {
