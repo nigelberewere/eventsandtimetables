@@ -98,7 +98,7 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
-void checkClassReminders() {
+  void checkClassReminders() {
     for (var c in timetable) {
       final start = _combineDateAndTime(c['start_time']);
       final diff = start.difference(now).inMinutes;
@@ -140,53 +140,53 @@ void checkClassReminders() {
       }
     }
   }
-void listenToAdminLogs() {
-  _logSubscription = supabase
-      .from('admin_logs')
-      .stream(primaryKey: ['id'])
-      .order('created_at', ascending: false)
-      .listen((logs) async {  // ✅ async added
-        if (logs.isEmpty) return;
 
-        final latest = logs.first;
-        final action = latest['action'];
-        final entity = latest['entity'] ?? '';
+  void listenToAdminLogs() {
+    _logSubscription = supabase
+        .from('admin_logs')
+        .stream(primaryKey: ['id'])
+        .order('created_at', ascending: false)
+        .listen((logs) async {
+          // ✅ async added
+          if (logs.isEmpty) return;
 
-        if ((action == 'Updated Class' || action == 'Deleted Class') &&
-            entity.contains(userProgram ?? '') &&
-            entity.contains(userYear ?? '')) {
+          final latest = logs.first;
+          final action = latest['action'];
+          final entity = latest['entity'] ?? '';
 
-          final title = "Admin Update";
-          final message = "$entity has been $action";
+          if ((action == 'Updated Class' || action == 'Deleted Class') &&
+              entity.contains(userProgram ?? '') &&
+              entity.contains(userYear ?? '')) {
+            final title = "Admin Update";
+            final message = "$entity has been $action";
 
-          // ✅ Check before showing popup
-          final alreadySeen = await _notificationAlreadyExists(
-            title: title,
-            message: message,
-            type: "admin",
-          );
+            // ✅ Check before showing popup
+            final alreadySeen = await _notificationAlreadyExists(
+              title: title,
+              message: message,
+              type: "admin",
+            );
 
-          if (alreadySeen) return; 
+            if (alreadySeen) return;
 
-          await addNotification(
-            title: title,
-            message: message,
-            type: "admin",
-          );
+            await addNotification(
+              title: title,
+              message: message,
+              type: "admin",
+            );
 
-          _showAdminPopup(action, entity);
-        }
-      });
-}
-void _showAdminPopup(String action, String entity) {
+            _showAdminPopup(action, entity);
+          }
+        });
+  }
+
+  void _showAdminPopup(String action, String entity) {
     showDialog(
       context: context,
       builder: (_) {
         return AlertDialog(
           title: const Text("Admin Update"),
-          content: Text(
-            "$entity has been $action.\n\nTap to view timetable.",
-          ),
+          content: Text("$entity has been $action.\n\nTap to view timetable."),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
@@ -206,46 +206,50 @@ void _showAdminPopup(String action, String entity) {
   }
 
   void listenToBroadcasts() {
-  _broadcastSub = supabase
-      .from('broadcasts')
-      .stream(primaryKey: ['id'])
-      .listen((data) async {  // 
-        if (data.isEmpty) return;
+    _broadcastSub = supabase
+        .from('broadcasts')
+        .stream(primaryKey: ['id'])
+        .listen((data) async {
+          //
+          if (data.isEmpty) return;
 
-        final latest = data.last;
+          final latest = data.last;
 
-        final programMatch = latest['target_program'] == null ||
-            latest['target_program'] == userProgram;
+          final programMatch =
+              latest['target_program'] == null ||
+              latest['target_program'] == userProgram;
 
-        final yearMatch = latest['target_year'] == null ||
-            latest['target_year'] == userYear;
+          final yearMatch =
+              latest['target_year'] == null ||
+              latest['target_year'] == userYear;
 
-        final isGlobal = latest['target_program'] == null &&
-            latest['target_year'] == null;
+          final isGlobal =
+              latest['target_program'] == null && latest['target_year'] == null;
 
-        if (isGlobal || (programMatch && yearMatch)) {
-          final title = latest['title'] as String;
-          final message = latest['message'] as String;
+          if (isGlobal || (programMatch && yearMatch)) {
+            final title = latest['title'] as String;
+            final message = latest['message'] as String;
 
-          //  Check before showing popup
-          final alreadySeen = await _notificationAlreadyExists(
-            title: title,
-            message: message,
-            type: 'broadcast',
-          );
+            //  Check before showing popup
+            final alreadySeen = await _notificationAlreadyExists(
+              title: title,
+              message: message,
+              type: 'broadcast',
+            );
 
-          if (alreadySeen) return; // 
+            if (alreadySeen) return; //
 
-          await addNotification(
-            title: title,
-            message: message,
-            type: 'broadcast',
-          );
+            await addNotification(
+              title: title,
+              message: message,
+              type: 'broadcast',
+            );
 
-          _showPopup(title, message);
-        }
-      });
-}
+            _showPopup(title, message);
+          }
+        });
+  }
+
   void _showPopup(String title, String message) {
     showDialog(
       context: context,
@@ -710,7 +714,8 @@ void _showAdminPopup(String action, String entity) {
         ),
       ),
     );
-  } 
+  }
+
   void _showStudentID() {
     showDialog(
       context: context,
@@ -728,8 +733,7 @@ void _showAdminPopup(String action, String entity) {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.account_circle,
-                    size: 60, color: Colors.white),
+                const Icon(Icons.account_circle, size: 60, color: Colors.white),
                 const SizedBox(height: 10),
                 Text(
                   userName ?? "Unknown",
@@ -751,11 +755,9 @@ void _showAdminPopup(String action, String entity) {
       },
     );
   }
+
   void _showRooms() {
-    final rooms = timetable
-        .map((c) => c['venue'] as String)
-        .toSet()
-        .toList();
+    final rooms = timetable.map((c) => c['venue'] as String).toSet().toList();
 
     showDialog(
       context: context,
@@ -776,6 +778,37 @@ void _showAdminPopup(String action, String entity) {
               },
             ),
           ),
+        );
+      },
+    );
+  }
+
+  void _showAlerts() {
+    final upcoming = timetable
+        .where((c) {
+          final start = _combineDateAndTime(c['start_time']);
+          return start.isAfter(now);
+        })
+        .take(3)
+        .toList();
+
+    showDialog(
+      context: context,
+      builder: (_) {
+        return AlertDialog(
+          title: const Text("Upcoming Alerts"),
+          content: upcoming.isEmpty
+              ? const Text("No upcoming classes 🎉")
+              : Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: upcoming.map((c) {
+                    return ListTile(
+                      leading: const Icon(Icons.notifications),
+                      title: Text(c['course_name']),
+                      subtitle: Text(c['start_time']),
+                    );
+                  }).toList(),
+                ),
         );
       },
     );
