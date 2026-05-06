@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:provider/provider.dart';
 import 'theme_provider.dart';
-import 'addEvents.dart';
+import 'addEvent.dart';
 import 'home.dart';
 import '../widgets/bottom_dock.dart';
 
