@@ -50,3 +50,15 @@ flutter test
 
 - The app starts on the landing route and routes through the screens defined in `lib/main.dart`.
 - Supabase configuration is initialized in code, so avoid committing any private secrets outside the existing app configuration.
+
+## Team Members
+1.	Mugugu Tanaka N02424144D	
+2.	Berewere Nigel N02421246J		
+3.	Gavaza Tapiwanashe N02420667X		
+4.	Maposa Aaron N02421176J			
+5.	Jowa Eugene N02420522D			
+6.	Bhunu Tanatswa N02424509A			
+7.	Munyangadzi Charity T N02425951Y		
+8.	Ndanga Tawana N02419910S			
+9.	Mukuche Priatah N02418666B
+10.	Clever Mukondiwa N02421441A	
