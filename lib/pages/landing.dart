@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
+import '../main.dart';
 
 class LandingPage extends StatelessWidget {
   const LandingPage({super.key});
@@ -54,12 +55,11 @@ class LandingPage extends StatelessWidget {
                     Text(
                       'Welcome to Campus Events & Timetables',
                       textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.headlineMedium
-                          ?.copyWith(
-                            color: AppColors.white,
-                            fontWeight: FontWeight.w800,
-                            height: 1.1,
-                          ),
+                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                        color: AppColors.white,
+                        fontWeight: FontWeight.w800,
+                        height: 1.1,
+                      ),
                     ),
                     const SizedBox(height: 14),
                     Text(
@@ -72,8 +72,7 @@ class LandingPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 32),
                     FilledButton(
-                      onPressed: () =>
-                          Navigator.of(context).pushNamed(loginRoute),
+                      onPressed: () => Navigator.of(context).pushNamed(loginRoute),
                       style: FilledButton.styleFrom(
                         backgroundColor: AppColors.amberSmoke,
                         foregroundColor: AppColors.blueMirage,
@@ -90,14 +89,10 @@ class LandingPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 12),
                     OutlinedButton(
-                      onPressed: () =>
-                          Navigator.of(context).pushNamed(signupRoute),
+                      onPressed: () => Navigator.of(context).pushNamed(signupRoute),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppColors.white,
-                        side: const BorderSide(
-                          color: AppColors.white,
-                          width: 1.5,
-                        ),
+                        side: const BorderSide(color: AppColors.white, width: 1.5),
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         textStyle: const TextStyle(
                           fontSize: 16,
