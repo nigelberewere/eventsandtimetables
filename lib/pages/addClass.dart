@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'theme_provider.dart';
 
 class AddClassPage extends StatefulWidget {
@@ -103,7 +104,67 @@ final List<String> _years = [
     return "$hour:$min:00"; // Supabase TIME format
   }
 
-  
+  Future<void> _submit() async {
+  if (!_formKey.currentState!.validate()) return;
+
+  try {
+    final user = supabase.auth.currentUser;
+
+    
+    await supabase.from('timetables').insert({
+      'program': _selectedProgram,
+      'year': _selectedYear,
+      'course_name': _courseController.text.trim(),
+      'day': _selectedDay,
+      'start_time': _formatTime(_startTime),
+      'end_time': _formatTime(_endTime),
+      'venue': _venueController.text.trim(),
+      'instructor': _instructorController.text.trim(),
+      'credits': _credits,
+    });
+
+    // 
+    await supabase.from('admin_logs').insert({
+  'action': 'Added Class',
+  'entity':
+      "${_courseController.text.trim()} ($_selectedProgram - $_selectedYear)",
+  'program': _selectedProgram,
+  'year': _selectedYear,
+  'created_at': DateTime.now().toIso8601String(),
+});
+
+// 2. Get all students in that program + year
+final students = await supabase
+    .from('profiles')
+    .select('id')
+    .eq('program', _selectedProgram)
+    .eq('year', _selectedYear);
+
+// 3. Insert notifications for each student
+for (final student in students) {
+  await supabase.from('notifications').insert({
+    'user_id': student['id'],
+    'title': 'New Class Added',
+    'message':
+        "${_courseController.text.trim()} has been added to your timetable",
+    'is_read': false,
+    'created_at': DateTime.now().toIso8601String(),
+  });
+}
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Class added successfully 🎉")),
+    );
+
+    Navigator.pop(context);
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Error: $e")),
+    );
+  }
+}
 
   @override
   Widget build(BuildContext context) {
