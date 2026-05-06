@@ -716,24 +716,53 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _showStudentID() {
-    showDialog(
-      context: context,
-      builder: (_) {
-        return Dialog(
-          backgroundColor: Colors.transparent,
+  showGeneralDialog(
+    context: context,
+    barrierDismissible: true,
+    barrierLabel: "",
+    barrierColor: Colors.black.withOpacity(0.4),
+    transitionDuration: const Duration(milliseconds: 300),
+    pageBuilder: (_, __, ___) {
+      return Center(
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
           child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 24),
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.08), //  glass effect
               borderRadius: BorderRadius.circular(20),
-              gradient: const LinearGradient(
-                colors: [Colors.blueAccent, Colors.deepPurpleAccent],
+              border: Border.all(
+                color: Colors.white.withOpacity(0.2),
               ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
+              ],
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.account_circle, size: 60, color: Colors.white),
-                const SizedBox(height: 10),
+                //  ICON
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white.withOpacity(0.1),
+                  ),
+                  child: const Icon(
+                    Icons.account_circle,
+                    size: 60,
+                    color: Colors.white,
+                  ),
+                ),
+
+                const SizedBox(height: 15),
+
+                //  NAME
                 Text(
                   userName ?? "Unknown",
                   style: const TextStyle(
@@ -742,18 +771,57 @@ class _HomePageState extends State<HomePage> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 5),
+
+                const SizedBox(height: 6),
+
+                //  STUDENT ID
                 Text(
                   "Student ID: ${studentId ?? 'N/A'}",
-                  style: const TextStyle(color: Colors.white70),
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.75),
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                //  CLOSE BUTTON
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white.withOpacity(0.15),
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      "Close",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
                 ),
               ],
             ),
           ),
-        );
-      },
-    );
-  }
+        ),
+      );
+    },
+
+    //  smooth animation
+    transitionBuilder: (_, animation, __, child) {
+      return Transform.scale(
+        scale: Curves.easeOutBack.transform(animation.value),
+        child: Opacity(
+          opacity: animation.value,
+          child: child,
+        ),
+      );
+    },
+  );
+}
 
   void _showRooms() {
     final rooms = timetable.map((c) => c['venue'] as String).toSet().toList();
