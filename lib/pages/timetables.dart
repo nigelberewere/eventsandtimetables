@@ -34,7 +34,57 @@ class _TimetablesPageState extends State<TimetablesPage> {
     fetchTimetable();
   }
 
-  
+  Future<void> fetchTimetable() async {
+  try {
+    final user = supabase.auth.currentUser;
+    if (user == null) return;
+
+    final profile = await supabase
+        .from('profiles')
+        .select()
+        .eq('id', user.id)
+        .maybeSingle(); // safer
+
+    if (profile == null) {
+      debugPrint("⚠️ Profile not found");
+      return;
+    }
+
+    userProgram = profile['program'];
+    userYear = profile['year']; // ✅ GET YEAR
+
+    if (userProgram == null || userYear == null) {
+      debugPrint("⚠️ Missing program or year");
+      return;
+    }
+
+    //  FILTER BY PROGRAM + YEAR
+    final data = await supabase
+        .from('timetables')
+        .select()
+        .eq('program', userProgram!)
+        .eq('year', userYear!);
+
+    final mapped = data.map<Map<String, dynamic>>((item) {
+      return {
+        'subject': item['course_name'],
+        'instructor': item['instructor'] ?? 'N/A',
+        'room': item['venue'],
+        'day': item['day'],
+        'startTime': item['start_time'],
+        'endTime': item['end_time'],
+        'color': _getColor(item['course_name']),
+      };
+    }).toList();
+
+    setState(() {
+      _classes = mapped;
+      isLoading = false;
+    });
+  } catch (e) {
+    debugPrint("❌ Error: $e");
+  }
+}
 
   Color _getColor(String subject) {
     final colors = [
