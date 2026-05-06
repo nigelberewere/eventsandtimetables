@@ -215,7 +215,7 @@ await supabase.from('timetables').update({
 // 2. Log admin action
 await supabase.from('admin_logs').insert({
   'action': 'Updated Class',
-  'entity': "${course.text} (${selectedProgram} - ${selectedYear})",
+  'entity': "${course.text} ($selectedProgram - $selectedYear)",
   'program': selectedProgram,
   'year': selectedYear,
   'created_at': DateTime.now().toIso8601String(),

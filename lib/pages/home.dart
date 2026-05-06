@@ -722,7 +722,7 @@ class _HomePageState extends State<HomePage> {
     barrierLabel: "",
     barrierColor: Colors.black.withOpacity(0.4),
     transitionDuration: const Duration(milliseconds: 300),
-    pageBuilder: (_, __, ___) {
+    pageBuilder: (_, _, _) {
       return Center(
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
@@ -811,7 +811,7 @@ class _HomePageState extends State<HomePage> {
     },
 
     //  smooth animation
-    transitionBuilder: (_, animation, __, child) {
+    transitionBuilder: (_, animation, _, child) {
       return Transform.scale(
         scale: Curves.easeOutBack.transform(animation.value),
         child: Opacity(
