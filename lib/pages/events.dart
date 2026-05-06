@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:provider/provider.dart';
 import 'theme_provider.dart';
-import 'addEvents.dart';
+//import 'addEvents.dart';
 import 'home.dart';
 import '../widgets/bottom_dock.dart';
 
@@ -161,12 +161,7 @@ class _EventsPageState extends State<EventsPage> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => Navigator.push(
-            context, MaterialPageRoute(builder: (context) => const AddEventPage())),
-        backgroundColor: theme.accentColor,
-        child: const Icon(Icons.add, color: Colors.white),
-      ),
+      
     );
   }
 
