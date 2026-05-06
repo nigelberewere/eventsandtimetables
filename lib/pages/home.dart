@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import 'theme_provider.dart';
 import '../widgets/bottom_dock.dart';
 import '../widgets/notification_provider.dart';
-
+import 'dart:ui';
 StreamSubscription? _logSubscription;
 StreamSubscription? _broadcastSub;
 
