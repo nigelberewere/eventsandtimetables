@@ -62,3 +62,9 @@ flutter test
 8.	Ndanga Tawana N02419910S			
 9.	Mukuche Priatah N02418666B
 10.	Clever Mukondiwa N02421441A	
+
+
+## ADMIN PASS WORD 
+
+adzaxx@gmail.com
+123456
