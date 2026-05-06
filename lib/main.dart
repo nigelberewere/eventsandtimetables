@@ -11,7 +11,7 @@ import 'pages/manage_users.dart';
 import 'pages/notifications.dart';
 import 'pages/profile.dart';
 import 'pages/signup.dart';
-//import 'pages/timetables.dart';
+import 'pages/timetables.dart';
 import 'pages/addEvents.dart';
 import 'pages/addClass.dart';
 import 'pages/settings.dart';
